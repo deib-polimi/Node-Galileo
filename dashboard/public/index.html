@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Dashboard</title>
+		<link href="/style.css" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap.css.map" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap-theme.css" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap-theme.css.map" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" media="screen">
+		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<script src="jquery/js/jquery-1.11.2.js"></script>
+		<script src="jquery/js/jquery-1.11.2.min.js"></script>
+		<script src="bootstrap/js/bootstrap.js"></script>
+		<script src="bootstrap/js/bootstrap.min.js"></script>
+		<script src="angular.min.js"></script>
+		<script>
+			var app = angular.module('dashboard', []);
+			app.controller('statusController', ['$scope', '$http', function($scope,$http) {
+			    $http.get("json")
+			    .success(function(response) {$scope.model = response;});
+			}]);
+		</script>
+	</head>
+	<body class="container body-content">
+		<div id="header">
+		    <span class="logo"><img src="node-red.png"> <span>Node-RED</span></span>
+		</div>
+		<div ng-app="dashboard" ng-controller="statusController" class="row"> 
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h1 class="panel-title"><b>Device Status</b></h1>
+				</div>
+				<div class="panel-body">
+					<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12" ng-repeat="x in model.status">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title text-center"><b>{{ x.name }}</b></h3>
+							</div>
+							<div class="panel-body">
+								<div ng-if="x.connected" class="text-center">
+									<img src="online.png">
+									<span>Online</span>
+								</div>
+								<div ng-if="!x.connected" class="text-center">
+									<img src="offline.png">
+									<span>Offline</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default" ng-show="model.values.length">
+				<div class="panel-heading">
+					<h1 class="panel-title"><b>Values</b></h1>
+				</div>
+				<div class="panel-body">
+					<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12" ng-repeat="x in model.values">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title text-center"><b>{{ x.key }}</b></h3>
+							</div>
+							<div class="panel-body">
+								<div class="text-center">
+									<span class="h3">{{x.value}}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default" ng-show="model.actions.length">
+				<div class="panel-heading">
+					<h1 class="panel-title"><b>Actions</b></h1>
+				</div>
+				<div class="panel-body">
+					<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12" ng-repeat="x in model.actions">
+						<div class="panel panel-default">
+							<div class="panel-heading" ng-show="x.title != ''">
+								<h3 class="panel-title text-center"><b>{{x.title}}</b></h3>
+							</div>
+							<div class="panel-body">
+								<div>
+									<form action="action" method="post">
+										<input type="hidden" name="id" value="{{x.id}}" />
+										<div ng-repeat="y in x.params">
+											<div class="form-group">
+												<label for="{{y.field}}">{{y.name}}</label>
+												<input type="text" class="form-control" name="{{y.field}}" />
+											</div>
+											<!--<div class="radio" ng-if="y.type == 'radio'">
+												<label>
+												    <input type="radio" name="{{y.field}}" value="option1" checked>
+												    {{y.name}}
+												</label>
+											</div>-->
+										</div>
+										<input type="submit" class="btn btn-default form-control" value="{{x.name}}" ng-show="!x.params.length" />
+										<input type="submit" class="btn btn-default" value="{{x.name}}" ng-show="x.params.length" />
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

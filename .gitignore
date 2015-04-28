@@ -1,0 +1,9 @@
+$ cat .gitignore
+
+macronodes/macronodes.json
+devices/list/**/*
+node_modules/**/*
+devices/list/**/*
+node_modules/.bin/jade
+
+node_modules/.bin/jade

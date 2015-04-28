@@ -1,0 +1,159 @@
+<!--
+  Copyright 2014 Paolo Ferraris
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+    var node;
+    var mode;
+    var direction;
+    var analogInputPins;
+    var digitalPins;
+    var analogOutputPins;
+    var pins;
+    RED.nodes.registerType('gal-gpio',{
+        category: 'advanced-input',
+        color: '#C0C0C0',
+        defaults: {
+            name: {value:""},
+            pin: {value: "0"},
+            deviceID: {value: this.deviceID},
+            mode: {value: this.mode},
+            direction: {value: this.direction}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "board.png",
+        label: function() {
+            return this.name||"gal-gpio";
+        },
+        device: function() {
+            var deviceID = this.deviceID;
+            var dev = RED.devices.filter(function(device){
+              return device.ID == deviceID;
+            });
+            if(dev.length != 1)
+                return "undefined";
+            else
+                return '('+dev[0].name+')';
+        },
+        oneditprepare: function() {
+          /*var devices = Array();
+          RED.devices.forEach(function(device) {
+            devices.push({
+              t: device.name,
+              v: device.ID
+            })
+          });
+          for (var d in devices) {
+            if(devices[d].v == this.deviceID)
+              $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t).prop('selected', true));
+            else
+              $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t));
+          }*/
+          mode = ["digital", "analog"];
+          for (var p in mode) {
+            if(mode[p] == this.mode)
+              $("#node-input-mode").append($("<option></option>").val(mode[p]).text(mode[p]).prop('selected', true));
+            else
+              $("#node-input-mode").append($("<option></option>").val(mode[p]).text(mode[p]));
+          }
+          if(this.mode === undefined) {
+            $("#node-input-mode").val(mode[0]);
+            this.mode = mode[0];
+          }
+          direction = ["input", "output"];
+          for (var p in direction) {
+            if(direction[p] == this.direction)
+              $("#node-input-direction").append($("<option></option>").val(direction[p]).text(direction[p]).prop('selected', true));
+            else
+              $("#node-input-direction").append($("<option></option>").val(direction[p]).text(direction[p]));
+          }
+          if(this.direction === undefined) {
+            $("#node-input-direction").val(direction[0]);
+            this.direction = direction[0];
+          }
+          node = this;
+          $("#node-input-mode").change(populatePins);
+          $("#node-input-direction").change(populatePins);
+          /*function() {
+            console.log("ok");
+            if($("#node-input-direction").val() == "input" && $("#node-input-mode").val() == "analog")
+              pins = analogInputPins;
+            else
+              pins = digitalPins;
+          });*/
+          pins = (this.mode == mode[1] && this.direction == direction[0]) ? analogInputPins : digitalPins;
+          analogInputPins = ["A0", "A1", "A2", "A3", "A4", "A5"];
+          analogOutputPins = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"];
+          digitalPins = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"];
+          for (var p in pins) {
+            if(pins[p] == this.pin)
+              $("#node-input-pin").append($("<option></option>").val(pins[p]).text(pins[p]).prop('selected', true));
+            else
+              $("#node-input-pin").append($("<option></option>").val(pins[p]).text(pins[p]));
+          }
+          /*if(RED.view.InsideMacronode()) {
+            $("#node-input-deviceID").hide();
+            $("#label-input-deviceID").hide();
+          }*/
+        }
+    });
+
+    var populatePins = function() {
+      //console.log('ok');
+      node.mode = $('#node-input-mode').val();
+      node.direction = $('#node-input-direction').val();
+      pins = (node.mode == mode[1] && node.direction == direction[0]) ? analogInputPins : digitalPins;
+      //analogInputPins = ["A0", "A1", "A2", "A3", "A4", "A5"];
+      //digitalPins = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"];
+      //while($("#node-input-pin").options.length)
+          //$("#node-input-pin").remove(0);
+      var list = document.getElementById("node-input-pin");
+      list.options.length = 0;
+      for (var p in pins) {
+        if(pins[p] == node.pin)
+          $("#node-input-pin").append($("<option></option>").val(pins[p]).text(pins[p]).prop('selected', true));
+        else
+          $("#node-input-pin").append($("<option></option>").val(pins[p]).text(pins[p]));
+      }
+    }
+</script>
+
+<script type="text/x-red" data-template-name="gal-gpio">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-deviceID" id="label-input-deviceID"><i class="icon-tag"></i> Device</label>
+        <select name="devices" id="node-input-deviceID" ></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-mode"><i class="icon-tag"></i> Mode</label>
+        <select name="mode" id="node-input-mode" ></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-direction"><i class="icon-tag"></i> Direction</label>
+        <select name="direction" id="node-input-direction" ></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-pin"><i class="icon-tag"></i> Pin</label>
+        <select name="pins" id="node-input-pin" ></select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="gal-gpio">
+    <p>A simple node that acts on a GPIO Pin on a Intel Galileo</p>
+</script>

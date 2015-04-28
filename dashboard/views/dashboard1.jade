@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h2.
+        Dashboard
+    table.table
+      th= "name"
+      th= "status"
+      each object, i in dashboard
+          tr
+              td= object.name
+              td= object.status

@@ -1,0 +1,112 @@
+<!--
+  Copyright 2013, 2014 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="d-action">
+    <div class="form-row">
+         <label for="node-input-actionTitle"><i class="fa fa-file"></i> Title</label>
+         <input type="text" id="node-input-actionTitle" placeholder="Title">
+    </div>
+    <div class="form-row">
+         <label for="node-input-actionName"><i class="fa fa-file"></i> Name</label>
+         <input type="text" id="node-input-actionName" placeholder="Name">
+    </div>
+    <div class="form-row">
+         <label for="node-input-order"><i class="fa fa-file"></i> Order</label>
+         <input type="number" id="node-input-order" placeholder="Order">
+    </div>
+    <div class="form-row">
+         <label for="node-input-order"><i class="fa fa-file"></i> Parameters</label>
+         <input id="num-of-parameters" value="0">
+    </div>
+    <div id="action-param-list">
+         
+    </div>
+</script>
+
+<script type="text/x-red" data-template-name="action-param-row">
+  <div name="action-param-row">
+    <div class="form-row">
+         <label for="param-name"><i class="fa fa-file"></i> Name</label>
+         <input type="text" name="param-name" placeholder="Name">
+         <label for="field-name"><i class="fa fa-file"></i> Field name</label>
+         <input type="text" name="field-name" placeholder="field name">
+    </div>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="d-action">
+    <p>Writes <b>msg.payload</b> to the dashboard with the name given here.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('d-action',{
+        category: 'dashboard',
+        defaults: {
+            actionName: {value:""},
+            actionTitle: {value:""},
+            order: {value:"0"},
+            params:{value:[]}
+        },
+        color:"#3FADB5",
+        inputs:0,
+        outputs:1,
+        icon: "dashboard.png",
+        align: "right",
+        label: function() {
+            return this.actionTitle||"d-action";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            if(this.params) {
+              $('#num-of-parameters').spinner().spinner( "value", this.params.length );
+              console.log('ok');
+            }
+            $("#num-of-parameters").spinner({
+                min:0,
+                spin: function( event, ui ){
+                    var num = ui.value;
+                    var rows = document.getElementsByName('action-param-row');
+                    if(rows.length < num) {
+                        $("#action-param-list").append($("script[data-template-name='action-param-row']").html());
+                    }
+                    else {
+                        if(rows.length > 0)
+                            rows[rows.length - 1].remove();
+                    }
+                }
+            });
+            for(var i in this.params) {
+              var p = this.params[i];
+              $("#action-param-list").append($("script[data-template-name='action-param-row']").html());
+              var name = $('input[name=param-name]')[$('input[name=param-name]').length - 1];
+              name.value = p.name;
+              var field = $('input[name=field-name]')[$('input[name=field-name]').length - 1];
+              field.value = p.field;
+            }
+        },
+        oneditsave: function() {
+          this.params = [];
+            var names = $('input[name=param-name]');
+            var fields = $('input[name=field-name]');
+            for(var i=0;i<names.length;i++) {
+                this.params.push({"name":names[i].value, "field":fields[i].value});
+            }
+        }
+    });
+
+</script>

@@ -1,0 +1,110 @@
+<!--
+  Copyright 2014 Paolo Ferraris
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+    var config = {
+      category: 'macronodes',
+      color: '#D8BFD8',
+      defaults: {
+          name: {value:""},
+          deviceID: {value: this.deviceID},
+          templateID: {value: this.templateID},
+          inputNode: {value:this.inputNode},
+          outputNodes: {value:this.outputNodes},
+          outputs: {value:this.outputs}
+      },
+      inputs:1,
+      outputs:1,
+      icon: "macronode.png",
+      label: function() {
+          var mNode = this;
+          if(mNode.templateID !== undefined)
+            return this.name||RED.macroNodeSet[mNode.templateID].name;
+          else
+            return this.name||"Mcro Node"
+      },
+      device: function() {
+          var deviceID = this.deviceID;
+          var dev = RED.devices.filter(function(device){
+            return device.ID == deviceID;
+          });
+          if(dev.length != 1)
+              return "undefined";
+          else
+              return '('+dev[0].name+')';
+      },
+      oneditprepare: function() {
+        /*var devices = Array();
+        RED.devices.forEach(function(device) {
+          devices.push({
+            t: device.name,
+            v: device.ID
+          })
+        });
+        for (var d in devices) {
+          if(devices[d].v == this.deviceID)
+            $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t).prop('selected', true));
+          else
+            $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t));
+        }*/
+        var macroNodes = Array();
+        RED.macroNodes.forEach(function(node) {
+          macroNodes.push({
+            t: node.name,
+            v: node.templateID
+          })
+        });
+        for (var d in macroNodes) {
+          if(macroNodes[d].v == this.templateID)
+            $("#node-input-templateID").append($("<option></option>").val(macroNodes[d].v).text(macroNodes[d].t).prop('selected', true));
+          else
+            $("#node-input-templateID").append($("<option></option>").val(macroNodes[d].v).text(macroNodes[d].t));
+        }
+      },
+      oneditsave: function() {
+        //console.log($("#node-input-deviceID").val());
+        RED.nodes.refreshMacroNodeChilds(this, $("#node-input-templateID").val(), $("#node-input-deviceID").val());
+      }
+    };
+    /*for(var i in RED.macroNodes) {
+      var n = RED.macroNodes[i];
+      RED.nodes.registerType(n.name, config);
+    }*/
+    RED.nodes.registerType('MacroNode', config);
+</script>
+
+<script type="text/x-red" data-template-name="MacroNode">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-deviceID"><i class="icon-tag"></i> Device</label>
+        <select name="devices" id="node-input-deviceID" ></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-macroNodeID"><i class="icon-tag"></i> Select Macro Node</label>
+        <select name="macronodes" id="node-input-templateID" ></select>
+    </div>
+    <!--<div class="form-row">
+        <label for="node-input-color"><i class="icon-tag"></i> Custom color</label>
+        <input type="text" id="node-input-color" placeholder="Color">
+    </div>-->
+</script>
+
+<script type="text/x-red" data-help-name="MacroNode">
+    <p>Macro Node</p>
+</script>

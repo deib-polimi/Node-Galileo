@@ -1,0 +1,15 @@
+extends layout
+
+block title
+	title Dashboard
+
+block content
+	div(class="panel-group", id="accordion", role="tablist", aria-multiselectable="false")
+	- var object= dashboard[deviceID]
+	include ./partials/dashboard-panel.jade
+	- for (var i in dashboard)
+		- object= dashboard[i]
+		if i != deviceID
+			include ./partials/dashboard-panel.jade
+			
+		

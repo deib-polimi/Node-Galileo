@@ -1,0 +1,77 @@
+<!--
+  Copyright 2013, 2014 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="d-value">
+    <div class="form-row">
+         <label for="node-input-propertyName"><i class="fa fa-file"></i> Name</label>
+         <input type="text" id="node-input-propertyName" placeholder="Name">
+    </div>
+    <div class="form-row">
+         <label for="node-input-measureUnit"><i class="fa fa-file"></i> Measure unit</label>
+         <input type="text" id="node-input-measureUnit" placeholder="Measure unit (optional)">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="d-value">
+    <p>Writes <b>msg.payload</b> to the dashboard with the name given here.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('d-value',{
+        category: 'dashboard',
+        defaults: {
+            propertyName: {value:""},
+            measureUnit: {value:""},
+        },
+        color:"#3FADB5",
+        inputs:1,
+        outputs:0,
+        icon: "dashboard.png",
+        align: "right",
+        label: function() {
+            return this.propertyName||"d-value";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        }/*,
+        device: function() {
+            var deviceID = this.deviceID;
+            var dev = RED.devices.filter(function(device){
+              return device.ID == deviceID;
+            });
+            if(dev.length != 1)
+                return "undefined";
+            else
+                return '('+dev[0].name+')';
+        },
+        oneditprepare: function() {
+            var devices = Array();
+            RED.devices.forEach(function(device) {
+                devices.push({
+                    t: device.name,
+                    v: device.ID
+                })
+            });
+            for (var d in devices) {
+                if(devices[d].v == this.deviceID)
+                    $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t).prop('selected', true));
+                else
+                    $("#node-input-deviceID").append($("<option></option>").val(devices[d].v).text(devices[d].t));
+            }
+        }*/
+    });
+
+</script>

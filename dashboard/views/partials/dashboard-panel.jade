@@ -1,0 +1,23 @@
+div(class="panel panel-default")
+	div(class="panel-heading")
+		h4(class="panel-title") #{object.name}
+	div(class="panel-body")
+		- var x = 0
+		- for (var i in object.status)
+			- x++
+		if x > 0
+			h4(class="panel-title") Status
+			ul(class="list-group")
+			- for (var i in object.status)
+				- var item = object.status[i]
+				li(class="list-group-item") #{i}: #{item}
+		br
+		- x = 0
+		- for (var i in object.values)
+			- x++
+		if x > 0
+			h4(class="panel-title") Sensors
+			ul(class="list-group")
+			- for (var i in object.values)
+				- var item = object.values[i]
+				li(class="list-group-item") #{item['key']}: #{item['value']}
