@@ -26,12 +26,8 @@
 </script>
 
 <script type="text/x-red" data-help-name="itunes-osx">
-    <p>Calls out to a system command.<br/></p>
-    <p>Provides 3 outputs... stdout, stderr, and return code.</p>
-    <p>By default uses exec() which calls the command, blocks while waiting for completion, and then returns the complete result in one go, along with any errors.</p>
-    <p>Optionally can use spawn() instead, which returns output from stdout and stderr as the command runs (ie one line at a time). On completion it then returns a return code (on the 3rd output).</p>
-    <p>Spawn only expect one command word, with all extra parameters to be comma separated and passed as the append.</p>
-    <p>The optional append gets added to the command after the <b>msg.payload</b> - so you can do things like pipe the result to another command.</p>
+    <p>Play a playlist from iTunes in a OSX device.<br/></p>
+    <p>The playlist name can be set inside the widget configuration or in the payload field of the json message.</p>
 </script>
 
 <script type="text/javascript">

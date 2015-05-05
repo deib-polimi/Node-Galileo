@@ -71,59 +71,61 @@ function start() {
     var path = settings.httpDashboardRoot || "/dashboard";
     serverPath = path + (path.slice(-1) == "/" ? "":"/") + "comms";
     if(is_server) {
-        wsServer = new WS.Server({server:server,path:serverPath});
+        if(wsServer === undefined) {
+            wsServer = new WS.Server({server:server,path:serverPath});
 
-        wsServer.on('connection',function(ws) {
-            util.log('[dashboard:comms] connection accepted');
-            activeConnections.push(ws);
-            ws.on('close',function() {
-            util.log('[dashboard:comms] connection closed');
-                for(i in devices_connected) {
-                    var d = devices_connected[i];
-                    var dev = devices_status[i];
-                    if(d == ws) {
-                        delete devices_connected[i];
-                        dev.connected = false;
+            wsServer.on('connection',function(ws) {
+                util.log('[dashboard:comms] connection accepted');
+                activeConnections.push(ws);
+                ws.on('close',function() {
+                    util.log('[dashboard:comms] connection closed');
+                    for(i in devices_connected) {
+                        var d = devices_connected[i];
+                        var dev = devices_status[i];
+                        if(d == ws) {
+                            delete devices_connected[i];
+                            dev.connected = false;
+                        }
                     }
-                }
-                for (var i=0;i<activeConnections.length;i++) {
-                    if (activeConnections[i] === ws) {
-                        activeConnections.splice(i,1);
-                        break;
+                    for (var i=0;i<activeConnections.length;i++) {
+                        if (activeConnections[i] === ws) {
+                            activeConnections.splice(i,1);
+                            break;
+                        }
                     }
-                }
-            });
-            ws.on('message', function(data,flags) {
-                var msg = null;
-                try {
-                    msg = JSON.parse(data);
-                } catch(err) {
-                    util.log("[dashboard:comms] received malformed message : "+err.toString());
-                    return;
-                }
-                if(msg.type == DEVICE_STATUS) {
-                    //util.log('[dashboard:comms] ping received');
-                    var id = msg.id;
-                    if(id && devices_status.hasOwnProperty(id)) {
-                        var status = msg.content;
-                        devices_status[id].status = status;
-                        devices_status[id].connected = true;
-                        devices_connected[id] = ws;
-                        //console.log(JSON.stringify(status));
+                });
+                ws.on('message', function(data,flags) {
+                    var msg = null;
+                    try {
+                        msg = JSON.parse(data);
+                    } catch(err) {
+                        util.log("[dashboard:comms] received malformed message : "+err.toString());
+                        return;
                     }
-                }
-                if(msg.type == DASHBOARD_MESSAGE) {
+                    if(msg.type == DEVICE_STATUS) {
+                        //util.log('[dashboard:comms] ping received');
+                        var id = msg.id;
+                        if(id && devices_status.hasOwnProperty(id)) {
+                            var status = msg.content;
+                            devices_status[id].status = status;
+                            devices_status[id].connected = true;
+                            devices_connected[id] = ws;
+                            //console.log(JSON.stringify(status));
+                        }
+                    }
+                    if(msg.type == DASHBOARD_MESSAGE) {
 
-                }
+                    }
+                });
+                ws.on('error', function(err) {
+                    util.log("[dashboard:comms] error : "+err.toString());
+                });
             });
-            ws.on('error', function(err) {
-                util.log("[dashboard:comms] error : "+err.toString());
-            });
-        });
 
-        wsServer.on('error', function(err) {
-            util.log("[dashboard:comms] server error : "+err.toString());
-        });
+            wsServer.on('error', function(err) {
+                util.log("[dashboard:comms] server error : "+err.toString());
+            });
+        }
     }
     else {
         client = null;
@@ -173,8 +175,8 @@ function connectWS() {
 }
 
 function stop() {
-    if(wsServer)
-        wsServer.close();
+    //if(wsServer)
+        //wsServer.close();
     if(interval)
         clearInterval(interval);
     if(client) {

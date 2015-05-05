@@ -552,46 +552,49 @@ RED.view = (function() {
     $("#chart").droppable({
             accept:".palette_node",
             drop: function( event, ui ) {
-                d3.event = event;
-                var selected_tool = ui.draggable[0].type;
-                var mousePos = d3.touches(this)[0]||d3.mouse(this);
-                mousePos[1] += this.scrollTop;
-                mousePos[0] += this.scrollLeft;
-                mousePos[1] /= scaleFactor;
-                mousePos[0] /= scaleFactor;
+                if(active_macronode[activeWorkspace]=== undefined) {
+                    d3.event = event;
+                    var selected_tool = ui.draggable[0].type;
+                    var mousePos = d3.touches(this)[0]||d3.mouse(this);
+                    mousePos[1] += this.scrollTop;
+                    mousePos[0] += this.scrollLeft;
+                    mousePos[1] /= scaleFactor;
+                    mousePos[0] /= scaleFactor;
 
-                var nn = { id:(1+Math.random()*4294967295).toString(16),x: mousePos[0],y:mousePos[1],w:node_width,z:activeWorkspace};
+                    var nn = { id:(1+Math.random()*4294967295).toString(16),x: mousePos[0],y:mousePos[1],w:node_width,z:activeWorkspace};
 
-                nn.type = selected_tool;
-                nn._def = RED.nodes.getType(nn.type);
-                nn.outputs = nn._def.outputs;
-                nn.changed = true;
+                    nn.type = selected_tool;
+                    nn._def = RED.nodes.getType(nn.type);
+                    nn.outputs = nn._def.outputs;
+                    nn.changed = true;
 
-                for (var d in nn._def.defaults) {
-                    if (nn._def.defaults.hasOwnProperty(d)) {
-                        nn[d] = nn._def.defaults[d].value;
+                    for (var d in nn._def.defaults) {
+                        if (nn._def.defaults.hasOwnProperty(d)) {
+                            nn[d] = nn._def.defaults[d].value;
+                        }
+                    }
+
+                    if (nn._def.onadd) {
+                        nn._def.onadd.call(nn);
+                    }
+
+                    nn.h = Math.max(node_height,(nn.outputs||0) * 15);
+                    RED.history.push({t:'add',nodes:[nn.id],dirty:dirty});
+                    RED.nodes.add(nn);
+                    RED.editor.validateNode(nn);
+                    setDirty(true);
+                    // auto select dropped node - so info shows (if visible)
+                    clearSelection();
+                    nn.selected = true;
+                    moving_set.push({n:nn});
+                    updateSelection();
+                    redraw();
+
+                    if (nn._def.autoedit) {
+                        RED.editor.edit(nn);
                     }
                 }
-
-                if (nn._def.onadd) {
-                    nn._def.onadd.call(nn);
-                }
-
-                nn.h = Math.max(node_height,(nn.outputs||0) * 15);
-                RED.history.push({t:'add',nodes:[nn.id],dirty:dirty});
-                RED.nodes.add(nn);
-                RED.editor.validateNode(nn);
-                setDirty(true);
-                // auto select dropped node - so info shows (if visible)
-                clearSelection();
-                nn.selected = true;
-                moving_set.push({n:nn});
-                updateSelection();
-                redraw();
-
-                if (nn._def.autoedit) {
-                    RED.editor.edit(nn);
-                }
+                
             }
     });
 
@@ -647,7 +650,8 @@ RED.view = (function() {
             RED.menu.setDisabled("btn-export-menu",false);
             RED.menu.setDisabled("btn-export-clipboard",false);
             RED.menu.setDisabled("btn-export-library",false);
-            RED.menu.setDisabled("btn-create-macronode",false);
+            if(active_macronode[activeWorkspace] === undefined)
+                RED.menu.setDisabled("btn-create-macronode",false);
         }
         if (moving_set.length === 0 && selected_link == null) {
             RED.keyboard.remove(/* backspace */ 8);
@@ -1799,11 +1803,19 @@ RED.view = (function() {
                 drawMacronodeInputsEditor(ui.value);
             }
         });
-        var nns = RED.nodes.createExportableNodeSet(moving_set);
+        var childs = [];
+        console.log(moving_set);
+        for(var x in moving_set) {
+            var node = moving_set[x];
+            if(node.n._def.device)
+                childs.push(node);
+        }
+        var nns = RED.nodes.createExportableNodeSet(childs);
         var total_outputs = 0;
         for(var i = 0; i < nns.length; i++) {
             var node = RED.nodes.node(nns[i].id);
-            total_outputs+= parseInt(node.outputs);
+            if(node.father === undefined)
+                total_outputs+= parseInt(node.outputs);
         }
         $("#macronode-num-outputs").spinner({
             min:0,
@@ -1812,7 +1824,6 @@ RED.view = (function() {
                 drawMacronodeOutputsEditor(ui.value);
             }
         });
-        var nns = RED.nodes.createExportableNodeSet(moving_set);
         $('#macronode-nodes-list').val(JSON.stringify(nns));
         $("#dialog").dialog("option","title","Create Macro Node").dialog( "open" );
     }
